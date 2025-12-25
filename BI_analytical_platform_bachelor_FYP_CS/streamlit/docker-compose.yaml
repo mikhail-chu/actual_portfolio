@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    env_file: .env
+    environment:
+      POSTGRES_DB: analytics
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - analytics-net
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file: .env
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - analytics-net
+
+  airflow:
+    image: apache/airflow:2.10.4-python3.12
+    container_name: airflow
+    env_file: .env
+    environment:
+      - AIRFLOW_UID=${AIRFLOW_UID}
+      - AIRFLOW_GID=${AIRFLOW_GID}
+    volumes:
+      - ./airflow_home:/opt/airflow
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./data:/opt/airflow/data
+      - ./sql_templates:/opt/airflow/sql_templates
+    command: >
+      bash -c "airflow db init &&
+               airflow users create -u dev -p dev -r Admin -e dev@example.com -f dev -l dev &&
+               airflow webserver & airflow scheduler"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - minio
+    networks:
+      - analytics-net
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: streamlit-app
+    env_file: .env
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+      - minio
+    networks:
+      - analytics-net
+
+networks:
+  analytics-net:
+    driver: bridge

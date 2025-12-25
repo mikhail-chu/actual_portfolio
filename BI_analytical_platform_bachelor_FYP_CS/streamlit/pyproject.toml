@@ -1,0 +1,35 @@
+[project]
+name = "analytics"
+version = "0.1.0"
+description = "Streamlit analytics dashboard"
+requires-python = ">=3.11"
+
+dependencies = [
+    "streamlit==1.50.0",
+    "streamlit[auth]==1.50.0",
+
+    # Database
+    "sqlalchemy",
+    "psycopg2-binary",
+
+    # Data
+    "pandas",
+    "numpy==1.26.4",
+    "pyarrow==14.0.2",
+    "fastparquet>=2024.11.0",
+    "xlsxwriter",
+
+    # Auth (Google OAuth)
+    "Authlib==1.3.2",
+
+    # Storage / API
+    "boto3",
+
+    # Visualization
+    "plotly",
+
+    # Utils
+    "geopy",
+]
+
+[tool.uv]

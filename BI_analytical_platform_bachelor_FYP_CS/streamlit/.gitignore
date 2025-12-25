@@ -1,0 +1,10 @@
+.env
+.vscode
+.streamlit
+.dockerignore
+.venv/
+__pycache__/
+*.pyc
+airflow_home/
+data/
+logs/
